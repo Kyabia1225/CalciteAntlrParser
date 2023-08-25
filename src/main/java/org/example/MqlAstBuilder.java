@@ -9,18 +9,18 @@ import org.example.MySQL.MySqlParserBaseVisitor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class MqlAstBuilder extends MySqlParserBaseVisitor<SqlNode> {
 
-    @Override public SqlNode visitQueryExpressionNointo(MySqlParser.QueryExpressionNointoContext ctx) {
-        return visit(ctx.querySpecificationNointo());
+
+    @Override public SqlNode visitSimpleSelect(MySqlParser.SimpleSelectContext ctx) {
+        return visit(ctx.querySpecification());
     }
 
-
-
-    @Override public SqlNode visitQuerySpecificationNointo(MySqlParser.QuerySpecificationNointoContext ctx) {
+    @Override public SqlNode visitQuerySpecification(MySqlParser.QuerySpecificationContext ctx) {
         SqlNodeList selectList = (SqlNodeList) visit(ctx.selectElements());
         SqlNodeList from = (SqlNodeList) visit(ctx.fromClause());
         SqlNode fromTable = from.get(0);
@@ -35,8 +35,13 @@ public class MqlAstBuilder extends MySqlParserBaseVisitor<SqlNode> {
 
 
     @Override public SqlNode visitSelectElements(MySqlParser.SelectElementsContext ctx) {
-        List<MySqlParser.SelectElementContext> elements = ctx.selectElement();
-        List<SqlNode> nodes = elements.stream().map(this::visit).collect(Collectors.toList());
+        List<SqlNode> nodes;
+        if (ctx.star != null) {
+            nodes = Collections.singletonList(SqlIdentifier.star(getSqlParserPos(ctx)));
+        } else {
+            List<MySqlParser.SelectElementContext> elements = ctx.selectElement();
+            nodes = elements.stream().map(this::visit).collect(Collectors.toList());
+        }
         return new SqlNodeList(nodes, getSqlParserPos(ctx));
     }
 

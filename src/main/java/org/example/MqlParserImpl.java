@@ -24,6 +24,6 @@ public class MqlParserImpl {
     }
 
     public SqlNode parserQuery(String sql) {
-        return invokeMqlParser(sql, MySqlParser::queryExpressionNointo);
+        return invokeMqlParser(sql, MySqlParser::selectStatement);
     }
 }
